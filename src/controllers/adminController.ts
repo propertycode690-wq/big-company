@@ -5766,7 +5766,7 @@ export const adminGetGasMeters = async (req: AuthRequest, res: Response) => {
 
 export const adminRegisterGasMeter = async (req: AuthRequest, res: Response) => {
   try {
-    const { meter_number, consumerId, alias_name, owner_name, owner_phone } = req.body;
+    const { meter_number, consumerId, alias_name, owner_name, owner_phone, meter_type } = req.body;
 
     if (!meter_number || !consumerId) {
       return res.status(400).json({ success: false, error: 'Meter number and consumer ID are required' });
@@ -5813,7 +5813,7 @@ export const adminRegisterGasMeter = async (req: AuthRequest, res: Response) => 
         ownerName: owner_name,
         ownerPhone: owner_phone,
         status: 'active',
-        meterType: previousRecord?.meterType || 'PIPING',
+        meterType: meter_type || previousRecord?.meterType || 'PIPING',
         isGprs: previousRecord?.isGprs || meter_number.startsWith('2510'),
         imei: previousRecord?.imei || null,
         meterKey: previousRecord?.meterKey || null,
