@@ -1,0 +1,303 @@
+import { Router } from 'express';
+import {
+  getDashboard,
+  getCustomers,
+  getCustomer,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer,
+  verifyCustomer,
+  updateCustomerCreditLimit,
+  getCustomerCreditLimit,
+  getRetailers,
+  createRetailer,
+  updateRetailer,
+  deleteRetailer,
+  verifyRetailer,
+  getWholesalers,
+  createWholesaler,
+  updateWholesaler,
+  deleteWholesaler,
+  updateWholesalerStatus,
+  updateRetailerStatus,
+  verifyWholesaler,
+  getLoans,
+  getNFCCards,
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getEmployees,
+  createEmployee,
+  updateEmployee,
+  deleteEmployee,
+  getProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  approveLoan,
+  rejectLoan,
+  registerNFCCard,
+  blockNFCCard,
+  activateNFCCard,
+  adminUnlinkCard,
+  adminLinkCard,
+  adminChangeNFCPin,
+  getNFCCardTransactions,
+  getTransactionReport,
+  getRevenueReport,
+  getSystemConfig,
+  updateSystemConfig,
+  getReports,
+  updateCustomerStatus,
+  // Real-time read-only account access
+  getCustomerAccountDetails,
+  getRetailerAccountDetails,
+  getWorkerAccountDetails,
+  getWholesalerAccountDetails,
+  // Admin proxy — wholesaler order & inventory actions
+  adminConfirmWholesalerOrder,
+  adminRejectWholesalerOrder,
+  adminShipWholesalerOrder,
+  adminUpdateWholesalerProduct,
+  adminUpdateWholesalerStock,
+  adminDeleteWholesalerProduct,
+  // Wholesaler-Retailer linking
+  getRetailerWholesalerLinkage,
+  linkRetailerToWholesaler,
+  unlinkRetailerFromWholesaler,
+  // Settlement Invoice management
+  getSettlementInvoices,
+  createSettlementInvoice,
+  getSettlementInvoice,
+  updateSettlementInvoice,
+  deleteSettlementInvoice,
+  confirmWholesaleDelivery,
+  getEmailLogs,
+  resendEmail,
+  getEmailTemplates,
+  saveEmailTemplate,
+  deleteEmailTemplate,
+  previewEmailTemplate,
+  getTemplateVariables,
+  sendManualEmail,
+  getEmailEvents,
+  updateEmailEvent,
+  getSystemAlerts,
+  acknowledgeAlert,
+  getRefundRequests,
+  processRefundRequest,
+  getAdminProfitInvoices,
+  generateAdminProfitInvoice,
+  getProfitInvoiceRecipients,
+  getProfitInvoiceStats,
+  endGasPeriod,
+  adminRegisterGasMeter,
+  adminGetGasMeters,
+  adminUnlinkGasMeter,
+} from '../controllers/adminController';
+import { getAdminTaxes } from '../controllers/taxController';
+import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '../controllers/supplierController';
+import { getJobs, createJob, updateJob, deleteJob, getApplications, createApplication, updateApplicationStatus } from '../controllers/recruitmentController';
+import { getDeals, createDeal, updateDeal, deleteDeal } from '../controllers/dealsController';
+import { getGasPricingPlans, createGasPricingPlan, updateGasPricingPlan, deleteGasPricingPlan } from '../controllers/gasPricingPlanController';
+import { authenticate, authorize } from '../middleware/authMiddleware';
+import { enforceReadOnly } from '../middleware/readOnlyMiddleware';
+import { getGasRewardsLeaderboard } from '../controllers/gasController';
+
+const router = Router();
+
+router.use(authenticate);
+router.use(authorize('admin', 'superadmin'));
+router.use(enforceReadOnly);
+
+router.get('/dashboard', getDashboard);
+
+// Tax Management
+router.get('/taxes', getAdminTaxes);
+
+// Customer Routes
+router.get('/customers', getCustomers);
+router.get('/customers/:id', getCustomer);
+router.post('/customers', createCustomer);
+router.put('/customers/:id', updateCustomer);
+router.delete('/customers/:id', deleteCustomer);
+router.put('/customers/:id/status', updateCustomerStatus);
+router.post('/customers/:id/verify', verifyCustomer);
+router.get('/customers/:id/credit-limit', getCustomerCreditLimit);
+router.put('/customers/:id/credit-limit', updateCustomerCreditLimit);
+
+// Retailer Routes
+router.get('/retailers', getRetailers);
+router.post('/retailers', createRetailer);
+router.put('/retailers/:id', updateRetailer);
+router.delete('/retailers/:id', deleteRetailer);
+router.post('/retailers/:id/verify', verifyRetailer);
+router.post('/retailers/:id/status', updateRetailerStatus);
+
+// Wholesaler Routes
+router.get('/wholesalers', getWholesalers);
+router.post('/wholesalers', createWholesaler);
+router.put('/wholesalers/:id', updateWholesaler);
+router.delete('/wholesalers/:id', deleteWholesaler);
+router.post('/wholesalers/:id/status', updateWholesalerStatus);
+router.post('/wholesalers/:id/verify', verifyWholesaler);
+
+router.get('/loans', getLoans);
+router.post('/loans/:id/approve', approveLoan);
+router.post('/loans/:id/reject', rejectLoan);
+
+router.get('/nfc-cards', getNFCCards);
+router.post('/nfc-cards', registerNFCCard);
+router.put('/nfc-cards/:id/block', blockNFCCard);
+router.put('/nfc-cards/:id/activate', activateNFCCard);
+router.put('/nfc-cards/:id/unlink', adminUnlinkCard);
+router.post('/nfc-cards/:id/link', adminLinkCard);
+router.post('/nfc-cards/:id/pin', adminChangeNFCPin);
+router.get('/nfc-cards/:id/transactions', getNFCCardTransactions);
+
+// Admin Gas Meters
+router.get('/gas-meters', adminGetGasMeters);
+router.post('/gas-meters', adminRegisterGasMeter);
+router.put('/gas-meters/:id/unlink', adminUnlinkGasMeter);
+
+// Rewards & Leaderboard
+router.get('/gas-rewards/leaderboard', getGasRewardsLeaderboard);
+
+// Product Routes
+router.get('/products', getProducts);
+router.post('/products', createProduct);
+router.put('/products/:id', updateProduct);
+router.delete('/products/:id', deleteProduct);
+
+// Category Routes
+router.get('/categories', getCategories);
+router.post('/categories', createCategory);
+router.put('/categories/:id', updateCategory);
+router.delete('/categories/:id', deleteCategory);
+
+// Supplier Routes
+router.get('/suppliers', getSuppliers);
+router.post('/suppliers', createSupplier);
+router.put('/suppliers/:id', updateSupplier);
+router.delete('/suppliers/:id', deleteSupplier);
+
+// Recruitment Routes
+router.get('/jobs', getJobs);
+router.post('/jobs', createJob);
+router.put('/jobs/:id', updateJob);
+router.delete('/jobs/:id', deleteJob);
+router.get('/applications', getApplications);
+router.post('/applications', createApplication);
+router.put('/applications/:id/status', updateApplicationStatus);
+
+// Deals Routes
+router.get('/deals', getDeals);
+router.post('/deals', createDeal);
+router.put('/deals/:id', updateDeal);
+router.delete('/deals/:id', deleteDeal);
+
+// Employee Routes
+router.get('/employees', getEmployees);
+router.post('/employees', createEmployee);
+router.put('/employees/:id', updateEmployee);
+router.delete('/employees/:id', deleteEmployee);
+
+// Report Routes
+router.get('/reports', getReports);
+router.get('/reports/transactions', getTransactionReport);
+router.get('/reports/revenue', getRevenueReport);
+
+// Refund Requests
+router.get('/refund-requests', getRefundRequests);
+router.post('/refund-requests/:id/process', processRefundRequest);
+
+// System Config Routes
+router.get('/system-config', getSystemConfig);
+router.put('/system-config', updateSystemConfig);
+
+// Gas Pricing Plan Routes
+router.get('/gas-pricing-plans', getGasPricingPlans);
+router.post('/gas-pricing-plans', createGasPricingPlan);
+router.put('/gas-pricing-plans/:id', updateGasPricingPlan);
+router.delete('/gas-pricing-plans/:id', deleteGasPricingPlan);
+
+// ==========================================
+// REAL-TIME READ-ONLY ACCOUNT ACCESS ROUTES
+// ==========================================
+// Customer account details (READ-ONLY for Admin)
+router.get('/customers/:id/account-details', getCustomerAccountDetails);
+// Retailer account details (READ-ONLY for Admin)
+router.get('/retailers/:id/account-details', getRetailerAccountDetails);
+// Worker/Employee account details (READ-ONLY for Admin)
+router.get('/employees/:id/account-details', getWorkerAccountDetails);
+// Wholesaler account details (READ-ONLY for Admin)
+router.get('/wholesalers/:id/account-details', getWholesalerAccountDetails);
+
+// ==========================================
+// ADMIN PROXY — WHOLESALER ORDER ACTIONS (Admin acts on behalf of wholesaler)
+// ==========================================
+router.post('/wholesalers/:wId/orders/:orderId/confirm', adminConfirmWholesalerOrder);
+router.post('/wholesalers/:wId/orders/:orderId/reject', adminRejectWholesalerOrder);
+router.post('/wholesalers/:wId/orders/:orderId/ship', adminShipWholesalerOrder);
+
+// ==========================================
+// ADMIN PROXY — WHOLESALER INVENTORY ACTIONS
+// ==========================================
+router.put('/wholesalers/:wId/inventory/:productId', adminUpdateWholesalerProduct);
+router.post('/wholesalers/:wId/inventory/:productId/stock', adminUpdateWholesalerStock);
+router.delete('/wholesalers/:wId/inventory/:productId', adminDeleteWholesalerProduct);
+
+// ==========================================
+// WHOLESALER-RETAILER LINKAGE ROUTES
+// ==========================================
+router.get('/linkage', getRetailerWholesalerLinkage);
+router.post('/linkage/link', linkRetailerToWholesaler);
+router.post('/linkage/unlink', unlinkRetailerFromWholesaler);
+
+// ==========================================
+// SETTLEMENT INVOICE ROUTES
+// ==========================================
+router.get('/settlement-invoices', getSettlementInvoices);
+router.post('/settlement-invoices', createSettlementInvoice);
+router.get('/settlement-invoices/:id', getSettlementInvoice);
+router.put('/settlement-invoices/:id', updateSettlementInvoice);
+router.delete('/settlement-invoices/:id', deleteSettlementInvoice);
+
+// ==========================================
+// PROFIT INVOICE ROUTES
+// ==========================================
+router.get('/profit-invoices', getAdminProfitInvoices);
+router.post('/profit-invoices/generate', generateAdminProfitInvoice);
+router.get('/profit-invoices/recipients', getProfitInvoiceRecipients);
+router.get('/profit-invoices/stats/:type/:id', getProfitInvoiceStats);
+router.post('/gas/end-period', endGasPeriod);
+
+// ==========================================
+// WHOLESALE ORDER MANAGEMENT
+// ==========================================
+router.post('/wholesale-orders/:id/confirm-delivery', confirmWholesaleDelivery);
+
+// Email Monitoring Routes
+router.get('/email-logs', getEmailLogs);
+router.post('/email-logs/:id/resend', resendEmail);
+
+// Email Template Routes
+router.get('/email-templates', getEmailTemplates);
+router.post('/email-templates', saveEmailTemplate);
+router.post('/email-templates/preview', previewEmailTemplate);
+router.get('/email-templates/variables', getTemplateVariables);
+router.delete('/email-templates/:id', deleteEmailTemplate);
+
+// Manual Email Sending
+router.post('/send-manual-email', sendManualEmail);
+
+// Email Event Mapping Routes
+router.get('/email-events', getEmailEvents);
+router.put('/email-events/:id', updateEmailEvent);
+
+// System Alerts
+router.get('/alerts', getSystemAlerts);
+router.post('/alerts/:id/acknowledge', acknowledgeAlert);
+
+export default router;
