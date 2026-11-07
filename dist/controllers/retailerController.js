@@ -48,7 +48,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.payRetailerLoan = exports.getRetailerLoans = exports.getMyProfitInvoices = exports.getCategories = exports.getPaymentAuditLogs = exports.getGasRewardsGiven = exports.confirmPurchaseOrderDelivery = exports.getPurchaseOrder = exports.getPurchaseOrders = exports.getSettlementInvoice = exports.getSettlementInvoices = exports.unlinkCustomer = exports.getLinkedCustomers = exports.rejectCustomerLinkRequest = exports.approveCustomerLinkRequest = exports.getCustomerLinkRequests = exports.linkCardForCustomer = exports.cancelLinkRequest = exports.getMyLinkRequests = exports.sendLinkRequest = exports.getAvailableWholesalers = exports.getAnalytics = exports.topUpWallet = exports.updateProfile = exports.getProfile = exports.payCredit = exports.makeRepayment = exports.requestCredit = exports.getCreditOrder = exports.getCreditOrders = exports.getCreditInfo = exports.getWalletTransactions = exports.createOrder = exports.getWholesalerProducts = exports.getDailySales = exports.fulfillSale = exports.cancelSale = exports.updateSaleStatus = exports.createSale = exports.scanBarcode = exports.getPOSProducts = exports.getWallet = exports.createBranch = exports.getBranches = exports.getOrder = exports.getOrders = exports.updateProduct = exports.createProduct = exports.getInventory = exports.getDashboardStats = void 0;
 exports.configureDraftOrder = void 0;
 const prisma_1 = __importDefault(require("../utils/prisma"));
-const cloudinary_1 = require("../utils/cloudinary");
+const s3_1 = require("../utils/s3");
 const email_queue_1 = require("../queues/email.queue");
 const template_service_1 = require("../services/template.service");
 // Get dashboard stats
@@ -451,7 +451,7 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // Upload to Cloudinary if image is provided as base64
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
         }
         if (sku) {
             const duplicateSku = yield prisma_1.default.product.findFirst({
@@ -520,7 +520,7 @@ const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // Upload to Cloudinary if new image is provided as base64
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
         }
         const currentProduct = yield prisma_1.default.product.findUnique({ where: { id: Number(id) } });
         let cleanCostPrice = costPrice !== undefined ? parseFloat(costPrice) : undefined;

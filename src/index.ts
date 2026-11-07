@@ -43,6 +43,7 @@ const allowedOrigins = [
   "https://bigpos.kiaantechnology.com",
   "https://mysql-production-2fb1.up.railway.app",
   "https://bigcompanybackend-production.up.railway.app",
+  "https://big.co.rw",
   "https://bigpos.kiaansoftware.com"
 ];
 
@@ -68,7 +69,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Request Logger
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
-  const logMsg = `[${timestamp}] ${req.method} ${req.url}\n${req.body && Object.keys(req.body).length > 0 ? `  Body: ${JSON.stringify(req.body)}\n` : ''}`;
+  const logMsg = `[${timestamp}] ${req.method} ${req.url}\n`;
   console.log(logMsg);
   try {
     const fs = require('fs');
@@ -96,12 +97,16 @@ app.use('/nfc', nfcRoutes);
 app.use('/wallet', walletRoutes);
 app.use('/rewards', rewardsRoutes);
 app.use('/api/webhooks', webhookRoutes);
-app.use('/api/debug', ipDebugRoutes); // Temporary IP debug endpoint
-app.use('/debug', debugRoutes); // Public debug endpoint
+
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/debug', ipDebugRoutes);
+  app.use('/debug', debugRoutes);
+  setAppInstance(app);
+}
+
 app.use('/gas-recharge', gasMeterRechargeRoutes); // Gas Meter Recharge module
 app.use('/content', contentRoutes); // News and Blog management
 app.use('/api/ussd', ussdRoutes); // USSD Menu Flow module
-setAppInstance(app); // Enable route listing in debug
 
 app.get('/', (req, res) => {
   res.send('Big Company API is running');

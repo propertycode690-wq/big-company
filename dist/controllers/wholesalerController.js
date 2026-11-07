@@ -47,7 +47,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMyProfitInvoices = exports.generateUniqueBarcode = exports.getSettlementInvoice = exports.getSettlementInvoices = exports.unlinkRetailer = exports.getLinkedRetailers = exports.rejectLinkRequest = exports.approveLinkRequest = exports.getLinkRequests = exports.rejectCreditRequest = exports.approveCreditRequest = exports.getCreditRequests = exports.confirmDelivery = exports.shipOrder = exports.rejectOrder = exports.confirmOrder = exports.getOrderStats = exports.updateOrderStatus = exports.getOrder = exports.getRetailerOrders = exports.deleteProduct = exports.updatePrice = exports.updateStock = exports.updateProduct = exports.createProduct = exports.getCategories = exports.getInventoryStats = exports.getInventory = exports.getDashboardStats = void 0;
 const prisma_1 = __importDefault(require("../utils/prisma"));
-const cloudinary_1 = require("../utils/cloudinary");
+const s3_1 = require("../utils/s3");
 const email_queue_1 = require("../queues/email.queue");
 const pricingUtils_1 = require("../utils/pricingUtils");
 // Get dashboard stats with comprehensive calculations
@@ -534,7 +534,7 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
             console.log('🖼️ Uploading image to Cloudinary...');
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
             console.log('✅ Image uploaded:', imageUrl);
         }
         const product = yield prisma_1.default.product.create({
@@ -593,7 +593,7 @@ const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
             console.log('🖼️ Uploading new image to Cloudinary...');
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
             console.log('✅ New image uploaded:', imageUrl);
         }
         // Validate barcode uniqueness

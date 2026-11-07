@@ -25,7 +25,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteBlog = exports.updateBlog = exports.getPublicBlogs = exports.getAllBlogs = exports.createBlog = exports.deleteNews = exports.updateNews = exports.getPublicNews = exports.getAllNews = exports.createNews = void 0;
 const prisma_1 = __importDefault(require("../utils/prisma"));
-const cloudinary_1 = require("../utils/cloudinary");
+const s3_1 = require("../utils/s3");
 // News Controllers
 const createNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -33,7 +33,7 @@ const createNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         // Upload image to Cloudinary if provided as base64
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
         }
         const news = yield prisma_1.default.news.create({
             data: {
@@ -84,7 +84,7 @@ const updateNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const _a = req.body, { image } = _a, updateData = __rest(_a, ["image"]);
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
         }
         const news = yield prisma_1.default.news.update({
             where: { id: parseInt(id) },
@@ -116,7 +116,7 @@ const createBlog = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const { title, category, blogText, image, author, status } = req.body;
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
         }
         const blog = yield prisma_1.default.blog.create({
             data: {
@@ -167,7 +167,7 @@ const updateBlog = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const _a = req.body, { image } = _a, updateData = __rest(_a, ["image"]);
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
         }
         const blog = yield prisma_1.default.blog.update({
             where: { id: parseInt(id) },

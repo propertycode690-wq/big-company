@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware';
 import prisma from '../utils/prisma';
-import { uploadImage } from '../utils/cloudinary';
+import { uploadImage } from '../utils/s3';
 import { hashPassword } from '../utils/auth';
 import { reverseVATCalculation } from '../utils/pricingReversalUtils';
 import crypto from 'crypto';
@@ -629,7 +629,7 @@ export const getCustomers = async (req: AuthRequest, res: Response) => {
       prisma.retailerProfile.findMany(),
       prisma.product.findMany()
     ]);
-    const retailerMap = new Map(retailerProfiles.map(rp => [rp.id, rp]));
+    const retailerMap = new Map<number, any>(retailerProfiles.map(rp => [rp.id, rp]));
 
     // Create a Set of product IDs belonging to Gas category to avoid crash on orphaned products
     const gasProductIds = new Set(
@@ -655,7 +655,7 @@ export const getCustomers = async (req: AuthRequest, res: Response) => {
         }
 
         // Exclude sales before the specific retailer's lastSettlementDate where the sale occurred
-        const saleRetailer = retailerMap.get(sale.retailerId);
+        const saleRetailer: any = retailerMap.get(sale.retailerId);
         const settlementDate = saleRetailer?.lastSettlementDate;
         if (settlementDate) {
           return new Date(sale.createdAt) >= new Date(settlementDate);
@@ -698,7 +698,7 @@ export const getCustomers = async (req: AuthRequest, res: Response) => {
     let totalPlatformRevenue = 0;
     let totalPlatformOrders = 0;
     for (const sale of allSales) {
-      const saleRetailer = retailerMap.get(sale.retailerId);
+      const saleRetailer: any = retailerMap.get(sale.retailerId);
       if (!saleRetailer) continue; // Skip sales from deleted retailers
 
       const settlementDate = saleRetailer?.lastSettlementDate;
@@ -4290,7 +4290,7 @@ export const adminUpdateWholesalerProduct = async (req: AuthRequest, res: Respon
 
     let imageUrl = image;
     if (image && image.startsWith('data:image')) {
-      const { uploadImage } = await import('../utils/cloudinary');
+      const { uploadImage } = await import('../utils/s3');
       imageUrl = await uploadImage(image);
     }
 
@@ -5086,12 +5086,12 @@ export const sendManualEmail = async (req: AuthRequest, res: Response) => {
     const users = await prisma.user.findMany({
       where: { email: { in: targetRecipients } }
     });
-    const userMap = new Map(users.map(u => [u.email?.toLowerCase(), u]));
+    const userMap = new Map<string, any>(users.map(u => [u.email?.toLowerCase() || '', u]));
 
 
     // Add each to queue (Requirement 4.2.10)
     const jobs = targetRecipients.map(email => {
-      const u = userMap.get(email.toLowerCase());
+      const u: any = userMap.get(email.toLowerCase());
       const name = u?.name || 'Valued Customer';
 
       const namePlaceholderRegex = /{{(customer_name|retail_name|wholesaler_name|name)}}/g;
@@ -5682,7 +5682,7 @@ export const adminGetGasMeters = async (req: AuthRequest, res: Response) => {
       where: { id: { in: consumerIds } },
       include: { user: true }
     });
-    const consumerMap = new Map(consumers.map(c => [c.id, c]));
+    const consumerMap = new Map<number, any>(consumers.map(c => [c.id, c]));
 
     // Calculate actual static stats per customer based on Top-ups
     const allConsumerTopups = await prisma.gasTopup.findMany({
@@ -5700,7 +5700,7 @@ export const adminGetGasMeters = async (req: AuthRequest, res: Response) => {
     const config = await prisma.systemConfig.findFirst();
     const rate = config?.gasPricePerM3 || 1500;
 
-    const staticStatsMap = new Map();
+    const staticStatsMap = new Map<number, any>();
     for (const t of allConsumerTopups) {
       if (!staticStatsMap.has(t.consumerId)) {
         staticStatsMap.set(t.consumerId, { staticTotalUnits: 0, staticTotalPaid: 0 });
@@ -5730,10 +5730,10 @@ export const adminGetGasMeters = async (req: AuthRequest, res: Response) => {
           return tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
         });
 
-        const cProfile = meter.consumerId ? consumerMap.get(meter.consumerId) : null;
+        const cProfile: any = meter.consumerId ? consumerMap.get(meter.consumerId) : null;
         let profileWithStats = null;
         if (cProfile) {
-          const staticStats = staticStatsMap.get(cProfile.id);
+          const staticStats: any = staticStatsMap.get(cProfile.id);
           profileWithStats = {
             ...cProfile,
             staticTotalUnits: staticStats?.staticTotalUnits || 0,

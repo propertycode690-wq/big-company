@@ -48,7 +48,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCustomerAccountDetails = exports.updateSystemConfig = exports.getSystemConfig = exports.getRevenueReport = exports.getTransactionReport = exports.unlinkNFCCard = exports.activateNFCCard = exports.blockNFCCard = exports.getNFCCardTransactions = exports.adminChangeNFCPin = exports.adminUnlinkCard = exports.adminLinkCard = exports.registerNFCCard = exports.rejectLoan = exports.approveLoan = exports.deleteEmployee = exports.updateEmployee = exports.createEmployee = exports.getEmployees = exports.deleteProduct = exports.updateProduct = exports.createProduct = exports.getProducts = exports.deleteCustomer = exports.updateCustomerStatus = exports.updateCustomer = exports.updateWholesalerStatus = exports.updateRetailerStatus = exports.deleteWholesaler = exports.updateWholesaler = exports.verifyCustomer = exports.verifyWholesaler = exports.verifyRetailer = exports.deleteRetailer = exports.updateRetailer = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.getNFCCards = exports.getLoans = exports.createWholesaler = exports.getWholesalers = exports.createRetailer = exports.getRetailers = exports.createCustomer = exports.getCustomer = exports.getCustomers = exports.getReports = exports.getDashboard = void 0;
 exports.adminUnlinkGasMeter = exports.adminRegisterGasMeter = exports.adminGetGasMeters = exports.endGasPeriod = exports.getProfitInvoiceStats = exports.getProfitInvoiceRecipients = exports.generateAdminProfitInvoice = exports.getAdminProfitInvoices = exports.processRefundRequest = exports.getRefundRequests = exports.getCustomerCreditLimit = exports.updateCustomerCreditLimit = exports.acknowledgeAlert = exports.getSystemAlerts = exports.updateEmailEvent = exports.getEmailEvents = exports.sendManualEmail = exports.deleteEmailTemplate = exports.getTemplateVariables = exports.previewEmailTemplate = exports.saveEmailTemplate = exports.getEmailTemplates = exports.resendEmail = exports.getEmailLogs = exports.confirmWholesaleDelivery = exports.deleteSettlementInvoice = exports.updateSettlementInvoice = exports.getSettlementInvoice = exports.createSettlementInvoice = exports.getSettlementInvoices = exports.unlinkRetailerFromWholesaler = exports.linkRetailerToWholesaler = exports.getRetailerWholesalerLinkage = exports.adminDeleteWholesalerProduct = exports.adminUpdateWholesalerStock = exports.adminUpdateWholesalerProduct = exports.adminShipWholesalerOrder = exports.adminRejectWholesalerOrder = exports.adminConfirmWholesalerOrder = exports.getWholesalerAccountDetails = exports.getWorkerAccountDetails = exports.getRetailerAccountDetails = void 0;
 const prisma_1 = __importDefault(require("../utils/prisma"));
-const cloudinary_1 = require("../utils/cloudinary");
+const s3_1 = require("../utils/s3");
 const auth_1 = require("../utils/auth");
 const pricingReversalUtils_1 = require("../utils/pricingReversalUtils");
 const crypto_1 = __importDefault(require("crypto"));
@@ -1946,7 +1946,7 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // Upload to Cloudinary if image is provided as base64
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
         }
         const product = yield prisma_1.default.product.create({
             data: {
@@ -1989,7 +1989,7 @@ const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // Upload to Cloudinary if new image is provided as base64
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            imageUrl = yield (0, cloudinary_1.uploadImage)(image);
+            imageUrl = yield (0, s3_1.uploadImage)(image);
         }
         const parsedStock = stock !== undefined && stock !== null ? parseFloat(stock) : undefined;
         // Update Wholesaler products (where retailerId is null)
@@ -3775,7 +3775,7 @@ const adminUpdateWholesalerProduct = (req, res) => __awaiter(void 0, void 0, voi
             return res.status(404).json({ success: false, error: 'Product not found' });
         let imageUrl = image;
         if (image && image.startsWith('data:image')) {
-            const { uploadImage } = yield Promise.resolve().then(() => __importStar(require('../utils/cloudinary')));
+            const { uploadImage } = yield Promise.resolve().then(() => __importStar(require('../utils/s3')));
             imageUrl = yield uploadImage(image);
         }
         const product = yield prisma_1.default.product.update({
@@ -5109,7 +5109,7 @@ const adminGetGasMeters = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.adminGetGasMeters = adminGetGasMeters;
 const adminRegisterGasMeter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { meter_number, consumerId, alias_name, owner_name, owner_phone } = req.body;
+        const { meter_number, consumerId, alias_name, owner_name, owner_phone, meter_type } = req.body;
         if (!meter_number || !consumerId) {
             return res.status(400).json({ success: false, error: 'Meter number and consumer ID are required' });
         }
@@ -5147,7 +5147,7 @@ const adminRegisterGasMeter = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 ownerName: owner_name,
                 ownerPhone: owner_phone,
                 status: 'active',
-                meterType: (previousRecord === null || previousRecord === void 0 ? void 0 : previousRecord.meterType) || 'PIPING',
+                meterType: meter_type || (previousRecord === null || previousRecord === void 0 ? void 0 : previousRecord.meterType) || 'PIPING',
                 isGprs: (previousRecord === null || previousRecord === void 0 ? void 0 : previousRecord.isGprs) || meter_number.startsWith('2510'),
                 imei: (previousRecord === null || previousRecord === void 0 ? void 0 : previousRecord.imei) || null,
                 meterKey: (previousRecord === null || previousRecord === void 0 ? void 0 : previousRecord.meterKey) || null,

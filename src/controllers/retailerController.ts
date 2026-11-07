@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware';
 import prisma from '../utils/prisma';
-import { uploadImage } from '../utils/cloudinary';
+import { uploadImage } from '../utils/s3';
 import { emailQueue } from '../queues/email.queue';
 import { TemplateService } from '../services/template.service';
 
@@ -972,10 +972,10 @@ export const createSale = async (req: AuthRequest, res: Response) => {
     const products = productIds.length > 0 ? await prisma.product.findMany({
       where: { id: { in: productIds } }
     }) : [];
-    const productMap = new Map(products.map(p => [p.id, p]));
+    const productMap = new Map<number, any>(products.map(p => [p.id, p]));
 
     for (const item of items) {
-      const product = productMap.get(Number(item.product_id));
+      const product: any = productMap.get(Number(item.product_id));
       if (!product || product.stock < Number(item.quantity)) {
         return res.status(400).json({
           error: `Insufficient stock for product: ${product?.name ?? String(item.product_id)}`
@@ -1192,7 +1192,7 @@ export const createSale = async (req: AuthRequest, res: Response) => {
         let totalProfit = 0;
 
         for (const item of items) {
-          const product = productMap.get(Number(item.product_id));
+          const product: any = productMap.get(Number(item.product_id));
           if (product) {
             let sellingPrice = Number(item.price);
             if (product.taxType === 'B') {

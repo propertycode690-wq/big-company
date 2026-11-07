@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/prisma';
-import { uploadImage } from '../utils/cloudinary';
+import { uploadImage } from '../utils/s3';
 
 // News Controllers
 export const createNews = async (req: Request, res: Response) => {
